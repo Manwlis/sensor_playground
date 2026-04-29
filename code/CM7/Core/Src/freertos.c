@@ -26,7 +26,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include"adc.h"
+#include "adc.h"
+#include "tim.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,24 +51,21 @@
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
+const osThreadAttr_t defaultTask_attributes =
+        { .name = "defaultTask" , .stack_size = 128 * 4 , .priority = (osPriority_t) osPriorityNormal , };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask(void *argument);
+void StartDefaultTask( void* argument );
 
-void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+void MX_FREERTOS_Init( void ); /* (MISRA C 2004 rule 8.1) */
 
 /* Hook prototypes */
-void configureTimerForRunTimeStats(void);
-unsigned long getRunTimeCounterValue(void);
+void configureTimerForRunTimeStats( void );
+unsigned long getRunTimeCounterValue( void );
 
 /* USER CODE BEGIN 1 */
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
@@ -83,45 +81,45 @@ __weak unsigned long getRunTimeCounterValue( void )
 /* USER CODE END 1 */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
-void MX_FREERTOS_Init(void) {
-  /* USER CODE BEGIN Init */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
+void MX_FREERTOS_Init( void )
+{
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* USER CODE BEGIN RTOS_MUTEX */
+	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
+	/* USER CODE END RTOS_MUTEX */
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
+	/* USER CODE END RTOS_SEMAPHORES */
 
-  /* USER CODE BEGIN RTOS_TIMERS */
+	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
+	/* USER CODE END RTOS_TIMERS */
 
-  /* USER CODE BEGIN RTOS_QUEUES */
+	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
+	/* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+	/* Create the thread(s) */
+	/* creation of defaultTask */
+	defaultTaskHandle = osThreadNew( StartDefaultTask , NULL , &defaultTask_attributes );
 
-  /* USER CODE BEGIN RTOS_THREADS */
+	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
+	/* USER CODE END RTOS_THREADS */
 
-  /* USER CODE BEGIN RTOS_EVENTS */
+	/* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
+	/* USER CODE END RTOS_EVENTS */
 
 }
-
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
  * @brief  Function implementing the defaultTask thread.
@@ -129,45 +127,72 @@ void MX_FREERTOS_Init(void) {
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+void StartDefaultTask( void* argument )
 {
-  /* USER CODE BEGIN StartDefaultTask */
-	extern ADC_HandleTypeDef hadc3;
+	/* USER CODE BEGIN StartDefaultTask */
+	UNUSED( argument );
+
+	uint16_t adc_buf[ADC3_NUM_REGS];
+
+	// Start DMA once
+	HAL_ADC_Start_DMA( &hadc3 , (uint32_t*) adc_buf , ADC3_NUM_REGS );
+	__HAL_DMA_DISABLE_IT( hadc3.DMA_Handle , DMA_IT_HT ); // Don't need half transfer interrupts
+
+	// Start timer
+	HAL_TIM_Base_Start( &htim2 );
+
 	int32_t filtered = 0;
-	/* Infinite loop */
 	for( ; ; )
 	{
-		osDelay( 1000 );
-		HAL_ADC_Start_IT( &hadc3 );
 		osThreadFlagsWait( 0x0001U , osFlagsWaitAny , osWaitForever );
-		uint32_t raw_temp = HAL_ADC_GetValue( &hadc3 );
-		HAL_ADC_Start_IT( &hadc3 );
-		osThreadFlagsWait( 0x0001U , osFlagsWaitAny , osWaitForever );
-		uint32_t raw_vrefint = HAL_ADC_GetValue( &hadc3 );
-		HAL_ADC_Stop_IT( &hadc3 );
 
-		// convert to Celsius and print
-		uint32_t vdd = VREFINT_CAL_VREF * ( *VREFINT_CAL_ADDR ) / raw_vrefint;
-		uint32_t temp_scaled = raw_temp * vdd / VREFINT_CAL_VREF;
+		// get raw adc measurements and calculate Celsius
+#define AVOID_DIVISION 0
+#if AVOID_DIVISION == 1
+		// calculate
+		const uint32_t TEMP_NUM = ( TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP ) * 100;
+		const uint32_t TEMP_OFF = TEMPSENSOR_CAL1_TEMP * 100;
+		// use q2.30 fixed point reciprocate to avoid the division
+		const uint32_t TEMP_RECIP_Q30 = (uint32_t) ( ( (uint64_t) 1 << 30 ) / ( *TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR ) );
 
-		int32_t temp_centi = ( (int32_t) temp_scaled - *TEMPSENSOR_CAL1_ADDR ) * ( ( TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP ) * 100 )
+		uint32_t temp = (uint32_t) ( ( (uint64_t) adc_buf[TEMP_REG] * ( *VREFINT_CAL_ADDR ) ) / adc_buf[VDD_REG] );
+
+		int32_t temp_centi = (int32_t) ( ( (int64_t) ( temp - ( *TEMPSENSOR_CAL1_ADDR ) ) * TEMP_NUM * TEMP_RECIP_Q30 ) >> 30 ) + TEMP_OFF;
+
+#else
+		uint32_t vdd = VREFINT_CAL_VREF * ( *VREFINT_CAL_ADDR ) / adc_buf[VDD_REG];
+		uint32_t temp_scaled = adc_buf[TEMP_REG] * vdd / VREFINT_CAL_VREF;
+		int32_t temp_centi = ( (int64_t) temp_scaled - *TEMPSENSOR_CAL1_ADDR ) * ( ( TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP ) * 100 )
 		                / ( *TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR ) + ( TEMPSENSOR_CAL1_TEMP * 100 );
+#endif
 
 		// smooth it, the sensor is very noisy
 		filtered = ( filtered * 7 + temp_centi ) / 8;
 
-		int32_t integer_part = temp_centi / 100;
-		uint32_t decimal_part = temp_centi % 100;
-		printf( "Temp = %ld.%02ld C\n" , integer_part , decimal_part );
+		// print
+		printf( "Temp = %ld.%02lu C\n" , temp_centi / 100 , temp_centi % 100 );
 	}
-  /* USER CODE END StartDefaultTask */
+	/* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 void HAL_ADC_ConvCpltCallback( ADC_HandleTypeDef* hadc )
 {
+//	printf("HAL_ADC_ConvCpltCallback\n");
+	UNUSED( hadc );
 	osThreadFlagsSet( defaultTaskHandle , 0x0001U );
+}
+
+void HAL_ADC_ConvHalfCpltCallback( ADC_HandleTypeDef* hadc )
+{
+//	printf("HAL_ADC_ConvHalfCpltCallback\n");
+	UNUSED( hadc );
+}
+
+void HAL_ADC_ErrorCallback( ADC_HandleTypeDef* hadc )
+{
+	UNUSED( hadc );
 }
 /* USER CODE END Application */
 
