@@ -27,7 +27,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "adc.h"
-#include "tim.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,7 +55,6 @@ const osThreadAttr_t defaultTask_attributes =
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask( void* argument );
@@ -132,67 +130,17 @@ void StartDefaultTask( void* argument )
 	/* USER CODE BEGIN StartDefaultTask */
 	UNUSED( argument );
 
-	uint16_t adc_buf[ADC3_NUM_REGS];
+	start_ADC_DMA();
 
-	// Start DMA once
-	HAL_ADC_Start_DMA( &hadc3 , (uint32_t*) adc_buf , ADC3_NUM_REGS );
-	__HAL_DMA_DISABLE_IT( hadc3.DMA_Handle , DMA_IT_HT ); // Don't need half transfer interrupts
-
-	// Start timer
-	HAL_TIM_Base_Start( &htim2 );
-
-	int32_t filtered = 0;
 	for( ; ; )
 	{
-		osThreadFlagsWait( 0x0001U , osFlagsWaitAny , osWaitForever );
-
-		// get raw adc measurements and calculate Celsius
-#define AVOID_DIVISION 0
-#if AVOID_DIVISION == 1
-		// calculate
-		const uint32_t TEMP_NUM = ( TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP ) * 100;
-		const uint32_t TEMP_OFF = TEMPSENSOR_CAL1_TEMP * 100;
-		// use q2.30 fixed point reciprocate to avoid the division
-		const uint32_t TEMP_RECIP_Q30 = (uint32_t) ( ( (uint64_t) 1 << 30 ) / ( *TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR ) );
-
-		uint32_t temp = (uint32_t) ( ( (uint64_t) adc_buf[TEMP_REG] * ( *VREFINT_CAL_ADDR ) ) / adc_buf[VDD_REG] );
-
-		int32_t temp_centi = (int32_t) ( ( (int64_t) ( temp - ( *TEMPSENSOR_CAL1_ADDR ) ) * TEMP_NUM * TEMP_RECIP_Q30 ) >> 30 ) + TEMP_OFF;
-
-#else
-		uint32_t vdd = VREFINT_CAL_VREF * ( *VREFINT_CAL_ADDR ) / adc_buf[VDD_REG];
-		uint32_t temp_scaled = adc_buf[TEMP_REG] * vdd / VREFINT_CAL_VREF;
-		int32_t temp_centi = ( (int64_t) temp_scaled - *TEMPSENSOR_CAL1_ADDR ) * ( ( TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP ) * 100 )
-		                / ( *TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR ) + ( TEMPSENSOR_CAL1_TEMP * 100 );
-#endif
-
-		// smooth it, the sensor is very noisy
-		filtered = ( filtered * 7 + temp_centi ) / 8;
-
-		// print
-		printf( "Temp = %ld.%02lu C\n" , temp_centi / 100 , temp_centi % 100 );
+		calc_ADC_temp();
 	}
 	/* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-void HAL_ADC_ConvCpltCallback( ADC_HandleTypeDef* hadc )
-{
-//	printf("HAL_ADC_ConvCpltCallback\n");
-	UNUSED( hadc );
-	osThreadFlagsSet( defaultTaskHandle , 0x0001U );
-}
 
-void HAL_ADC_ConvHalfCpltCallback( ADC_HandleTypeDef* hadc )
-{
-//	printf("HAL_ADC_ConvHalfCpltCallback\n");
-	UNUSED( hadc );
-}
-
-void HAL_ADC_ErrorCallback( ADC_HandleTypeDef* hadc )
-{
-	UNUSED( hadc );
-}
 /* USER CODE END Application */
 

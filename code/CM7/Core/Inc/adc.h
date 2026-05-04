@@ -1,21 +1,21 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    adc.h
-  * @brief   This file contains all the function prototypes for
-  *          the adc.c file
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    adc.h
+ * @brief   This file contains all the function prototypes for
+ *          the adc.c file
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2026 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __ADC_H__
@@ -38,16 +38,16 @@ extern ADC_HandleTypeDef hadc3;
 
 enum adc3_regs
 {
-	TEMP_REG = 0 ,
-	VDD_REG ,
-	ADC3_NUM_REGS
+	TEMP_REG = 0, VDD_REG, ADC3_NUM_REGS
 };
 
 /* USER CODE END Private defines */
 
-void MX_ADC3_Init(void);
+void MX_ADC3_Init( void );
 
 /* USER CODE BEGIN Prototypes */
+void start_ADC_DMA();
+void calc_ADC_temp();
 
 /* USER CODE END Prototypes */
 
