@@ -43,7 +43,7 @@ enum adc3_regs
 
 /* USER CODE END Private defines */
 
-void MX_ADC3_Init( void );
+void MX_ADC3_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 void start_ADC_DMA();

@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "LIS3DHTR.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

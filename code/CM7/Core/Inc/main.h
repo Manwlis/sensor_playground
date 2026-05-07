@@ -60,6 +60,9 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LIS3_INT_Pin GPIO_PIN_0
+#define LIS3_INT_GPIO_Port GPIOA
+#define LIS3_INT_EXTI_IRQn EXTI0_IRQn
 
 /* USER CODE BEGIN Private defines */
 

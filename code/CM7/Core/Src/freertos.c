@@ -27,6 +27,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "adc.h"
+#include "stm32h7xx_nucleo.h"
+#include "LIS3DHTR.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,20 +52,23 @@
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes =
-        { .name = "defaultTask" , .stack_size = 128 * 4 , .priority = (osPriority_t) osPriorityNormal , };
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask( void* argument );
+void StartDefaultTask(void *argument);
 
-void MX_FREERTOS_Init( void ); /* (MISRA C 2004 rule 8.1) */
+void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* Hook prototypes */
-void configureTimerForRunTimeStats( void );
-unsigned long getRunTimeCounterValue( void );
+void configureTimerForRunTimeStats(void);
+unsigned long getRunTimeCounterValue(void);
 
 /* USER CODE BEGIN 1 */
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
@@ -79,45 +84,45 @@ __weak unsigned long getRunTimeCounterValue( void )
 /* USER CODE END 1 */
 
 /**
- * @brief  FreeRTOS initialization
- * @param  None
- * @retval None
- */
-void MX_FREERTOS_Init( void )
-{
-	/* USER CODE BEGIN Init */
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
+void MX_FREERTOS_Init(void) {
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* USER CODE BEGIN RTOS_MUTEX */
+  /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-	/* USER CODE END RTOS_MUTEX */
+  /* USER CODE END RTOS_MUTEX */
 
-	/* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-	/* USER CODE END RTOS_SEMAPHORES */
+  /* USER CODE END RTOS_SEMAPHORES */
 
-	/* USER CODE BEGIN RTOS_TIMERS */
+  /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-	/* USER CODE END RTOS_TIMERS */
+  /* USER CODE END RTOS_TIMERS */
 
-	/* USER CODE BEGIN RTOS_QUEUES */
+  /* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-	/* USER CODE END RTOS_QUEUES */
+  /* USER CODE END RTOS_QUEUES */
 
-	/* Create the thread(s) */
-	/* creation of defaultTask */
-	defaultTaskHandle = osThreadNew( StartDefaultTask , NULL , &defaultTask_attributes );
+  /* Create the thread(s) */
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-	/* USER CODE BEGIN RTOS_THREADS */
+  /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-	/* USER CODE END RTOS_THREADS */
+  /* USER CODE END RTOS_THREADS */
 
-	/* USER CODE BEGIN RTOS_EVENTS */
+  /* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
-	/* USER CODE END RTOS_EVENTS */
+  /* USER CODE END RTOS_EVENTS */
 
 }
+
 /* USER CODE BEGIN Header_StartDefaultTask */
 /**
  * @brief  Function implementing the defaultTask thread.
@@ -125,18 +130,46 @@ void MX_FREERTOS_Init( void )
  * @retval None
  */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask( void* argument )
+void StartDefaultTask(void *argument)
 {
-	/* USER CODE BEGIN StartDefaultTask */
+  /* USER CODE BEGIN StartDefaultTask */
 	UNUSED( argument );
 
 	start_ADC_DMA();
 
+	LIS3DHTR_device_t LIS3DHTR_handle = LIS3DHTR_create_handle( &hi2c4 , 0x19 );
+
+	char input = '\0';
+
 	for( ; ; )
 	{
-		calc_ADC_temp();
+		// bsp implement printf but not scanf
+		HAL_UART_Receive( &(hcom_uart[COM1]) , (uint8_t*) &input , 1 , osWaitForever );
+		printf("\n");
+
+		if( input == '1' )
+			calc_ADC_temp();
+		if( input == '2' )
+			LIS3DHTR_read_all_regs( &LIS3DHTR_handle );
+		if( input == '3' )
+		{
+			LIS3DHTR_enable_aux_adcs( &LIS3DHTR_handle );
+			LIS3DHTR_enable_temp_sensor( &LIS3DHTR_handle );
+			LIS3DHTR_enable_BDU( &LIS3DHTR_handle );
+			LIS3DHTR_set_ODR( &LIS3DHTR_handle , ODR_100HZ );
+
+			osDelay(5);
+			LIS3DHTR_get_temp( &LIS3DHTR_handle );
+		}
+		if( input == 'a' )
+		{
+			volatile float x; // volatile so the dont get optimized away
+			volatile float y;
+			volatile float z;
+			LIS3DHTR_get_acceleration( &LIS3DHTR_handle , &x , &y , &z );
+		}
 	}
-	/* USER CODE END StartDefaultTask */
+  /* USER CODE END StartDefaultTask */
 }
 
 /* Private application code --------------------------------------------------*/
