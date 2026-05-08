@@ -166,6 +166,7 @@ void StartDefaultTask(void *argument)
 			volatile float x; // volatile so the dont get optimized away
 			volatile float y;
 			volatile float z;
+			LIS3DHTR_set_resolution( &LIS3DHTR_handle , LIS3DHTR_LOW_POWER );
 			LIS3DHTR_get_acceleration( &LIS3DHTR_handle , &x , &y , &z );
 		}
 	}

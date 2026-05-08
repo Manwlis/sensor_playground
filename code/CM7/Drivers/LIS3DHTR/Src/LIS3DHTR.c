@@ -153,6 +153,36 @@ void LIS3DHTR_set_scale( const LIS3DHTR_device_t* const device , CTRL_REG4_FS_se
 	LIS3DHTR_write_reg( device , LIS3DHTR_CTRL_REG4 , data );
 }
 
+void LIS3DHTR_set_resolution( const LIS3DHTR_device_t* const device , LIS3DHTR_output_resolution_t resolution )
+{
+	uint8_t reg1;
+	uint8_t reg4;
+
+	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG1 , &reg1 );
+	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG4 , &reg4 );
+
+	switch ( resolution ) {
+		case LIS3DHTR_LOW_POWER:
+			reg_set_field( &reg1 , CTRL_REG1_LPen_pos , LIS3_ENABLE );
+			reg_set_field( &reg4 , CTRL_REG4_HR_pos , LIS3_DISABLE );
+
+			break;
+		case LIS3DHTR_NORMAL:
+			reg_set_field( &reg1 , CTRL_REG1_LPen_pos , LIS3_DISABLE );
+			reg_set_field( &reg4 , CTRL_REG4_HR_pos , LIS3_DISABLE );
+			break;
+		case LIS3DHTR_HIGH:
+			reg_set_field( &reg1 , CTRL_REG1_LPen_pos , LIS3_DISABLE );
+			reg_set_field( &reg4 , CTRL_REG4_HR_pos , LIS3_ENABLE );
+			break;
+		default:
+			return; // erroneous setting
+	}
+
+	LIS3DHTR_write_reg( device , LIS3DHTR_CTRL_REG1 , reg1 );
+	LIS3DHTR_write_reg( device , LIS3DHTR_CTRL_REG4 , reg4 );
+}
+
 void LIS3DHTR_get_temp( const LIS3DHTR_device_t* const device )
 {
 	uint8_t ADC3_H;

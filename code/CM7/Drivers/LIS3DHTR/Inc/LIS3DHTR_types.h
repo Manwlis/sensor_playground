@@ -151,6 +151,13 @@ typedef enum
 
 typedef enum
 {
+	LIS3DHTR_LOW_POWER ,
+	LIS3DHTR_NORMAL ,
+	LIS3DHTR_HIGH
+}LIS3DHTR_output_resolution_t;
+
+typedef enum
+{
 	ODR_POWER_DOWN ,
 	ODR_1HZ ,
 	ODR_10HZ ,

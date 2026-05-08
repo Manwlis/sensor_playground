@@ -31,6 +31,7 @@ void LIS3DHTR_disable_BDU( const LIS3DHTR_device_t* const device );
 void LIS3DHTR_set_ODR( const LIS3DHTR_device_t* const device , CTRL_REG1_ODR_mode_t ODR_MODE );
 void LIS3DHTR_get_temp( const LIS3DHTR_device_t* const device );
 void LIS3DHTR_get_acceleration( const LIS3DHTR_device_t* const device , float* x , float* y , float *z );
+void LIS3DHTR_set_resolution( const LIS3DHTR_device_t* const device , LIS3DHTR_output_resolution_t resolution );
 
 /* Inline functions ---------------------------------------------*/
 inline uint8_t reg_get_field( uint8_t reg , uint8_t field_mask , uint8_t field_pos )
