@@ -1,4 +1,4 @@
-name: Notify FREERTOS_LWIP_MQTT_TRIGGER_TOKEN
+name: Notify FREERTOS_LWIP_MQTT
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger FREERTOS_LWIP_MQTT_TRIGGER_TOKEN workflow
+      - name: Trigger FREERTOS_LWIP_MQTT workflow
         run: |
           curl -X POST \
             -H "Accept: application/vnd.github+json" \
