@@ -54,7 +54,7 @@
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 
@@ -163,9 +163,9 @@ void StartDefaultTask(void *argument)
 		}
 		if( input == 'a' )
 		{
-			volatile float x; // volatile so the dont get optimized away
-			volatile float y;
-			volatile float z;
+			float x;
+			float y;
+			float z;
 			LIS3DHTR_set_resolution( &LIS3DHTR_handle , LIS3DHTR_LOW_POWER );
 			LIS3DHTR_get_acceleration( &LIS3DHTR_handle , &x , &y , &z );
 		}

@@ -10,7 +10,7 @@
 #include "i2c.h"
 
 
-#define DEBUG_LIS3DHTR
+//#define DEBUG_LIS3DHTR
 
 enum
 {
@@ -59,6 +59,9 @@ typedef struct
 // Device information
 typedef struct
 {
+#ifdef DEBUG_LIS3DHTR
+	const char* const name;
+#endif
 	const LIS3DHTR_reg_t* const memory_map;
 	const I2C_HandleTypeDef* const i2c_handle;
 	const uint8_t i2c_address;
@@ -76,13 +79,13 @@ typedef struct
 // STATUS_REG_AUX (07h) ----------
 #define STATUS_REG_AUX_FIELDS( X ) \
 	X( STATUS_REG_AUX_321OR , 0 , 1 ) \
-	X( STATUS_REG_AUX_3OR , 1 , 1 )   \
-	X( STATUS_REG_AUX_2OR , 2 , 1 )   \
-	X( STATUS_REG_AUX_1OR , 3 , 1 )   \
+	X( STATUS_REG_AUX_3OR   , 1 , 1 ) \
+	X( STATUS_REG_AUX_2OR   , 2 , 1 ) \
+	X( STATUS_REG_AUX_1OR   , 3 , 1 ) \
 	X( STATUS_REG_AUX_321DA , 4 , 1 ) \
-	X( STATUS_REG_AUX_3DA , 5 , 1 )   \
-	X( STATUS_REG_AUX_2DA , 6 , 1 )   \
-	X( STATUS_REG_AUX_1DA , 7 , 1 )
+	X( STATUS_REG_AUX_3DA   , 5 , 1 ) \
+	X( STATUS_REG_AUX_2DA   , 6 , 1 ) \
+	X( STATUS_REG_AUX_1DA   , 7 , 1 )
 
 typedef enum
 {

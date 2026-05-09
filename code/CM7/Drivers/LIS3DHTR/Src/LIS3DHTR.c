@@ -45,7 +45,11 @@ void LIS3DHTR_read_all_regs( const LIS3DHTR_device_t* const device )
 
 		LIS3DHTR_read_reg( device , i , &data );
 
+#ifdef DEBUG_LIS3DHTR
 		printf( "%2d    %20s    %x\n" , i , LIS3DHTR_memory_map[i].name , data );
+#else
+		printf( "%2d    %x\n" , i , data );
+#endif
 	}
 }
 
@@ -55,21 +59,21 @@ void test_infastructure( const LIS3DHTR_device_t* const device )
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_FIFO_SRC_REG , &data );
 
-	printf( "FSS %d\n" , reg_get_field( data , FIFO_SRC_REG_FSS_mask , FIFO_SRC_REG_FSS_pos) );
-	printf( "EMPTY %d\n" , reg_get_field( data , FIFO_SRC_REG_EMPTY_mask , FIFO_SRC_REG_EMPTY_pos) );
-	printf( "OVRN_FIFO %d\n" , reg_get_field( data , FIFO_SRC_REG_OVRN_FIFO_mask , FIFO_SRC_REG_OVRN_FIFO_pos) );
-	printf( "WTM %d\n" , reg_get_field( data , FIFO_SRC_REG_WTM_mask , FIFO_SRC_REG_WTM_pos) );
+	printf( "FSS %d\n" , reg_get_field( data , FIFO_SRC_REG_FSS ) );
+	printf( "EMPTY %d\n" , reg_get_field( data , FIFO_SRC_REG_EMPTY ) );
+	printf( "OVRN_FIFO %d\n" , reg_get_field( data , FIFO_SRC_REG_OVRN_FIFO ) );
+	printf( "WTM %d\n" , reg_get_field( data , FIFO_SRC_REG_WTM ) );
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG1 , &data );
 
 	printf("Value read ------------------\n");
 	printf( "LIS3DHTR_CTRL_REG1 %x\n" , data );
-	printf("ODR %d\n" , reg_get_field( data , CTRL_REG1_ODR_mask , CTRL_REG1_ODR_pos) );
+	printf("ODR %d\n" , reg_get_field( data , CTRL_REG1_ODR ) );
 
-	reg_set_field( &data , CTRL_REG1_ODR_pos , ODR_100HZ );
+	reg_set_field( &data , CTRL_REG1_ODR , ODR_100HZ );
 	printf("Value to write ------------------\n");
 	printf( "LIS3DHTR_CTRL_REG1 %x\n" , data );
-	printf("ODR %d\n" , reg_get_field( data , CTRL_REG1_ODR_mask , CTRL_REG1_ODR_pos) );
+	printf("ODR %d\n" , reg_get_field( data , CTRL_REG1_ODR ) );
 
 	LIS3DHTR_write_reg( device , LIS3DHTR_CTRL_REG1 , data );
 
@@ -77,7 +81,7 @@ void test_infastructure( const LIS3DHTR_device_t* const device )
 
 	printf("Value writen ------------------\n");
 	printf( "LIS3DHTR_CTRL_REG1 %x\n" , data );
-	printf("ODR %d\n" , reg_get_field( data , CTRL_REG1_ODR_mask , CTRL_REG1_ODR_pos) );
+	printf("ODR %d\n" , reg_get_field( data , CTRL_REG1_ODR ) );
 }
 
 
@@ -86,7 +90,7 @@ void LIS3DHTR_enable_aux_adcs( const LIS3DHTR_device_t* const device )
 	uint8_t data;
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_TEMP_CFG_REG , &data );
-	reg_set_field( &data , TEMP_CFG_ADC_EN_pos , LIS3_ENABLE );
+	reg_set_field( &data , TEMP_CFG_ADC_EN , LIS3_ENABLE );
 	LIS3DHTR_write_reg( device , LIS3DHTR_TEMP_CFG_REG , data );
 }
 
@@ -95,7 +99,7 @@ void LIS3DHTR_disable_aux_adcs( const LIS3DHTR_device_t* const device )
 	uint8_t data;
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_TEMP_CFG_REG , &data );
-	reg_set_field( &data , TEMP_CFG_ADC_EN_pos , LIS3_DISABLE );
+	reg_set_field( &data , TEMP_CFG_ADC_EN , LIS3_DISABLE );
 	LIS3DHTR_write_reg( device , LIS3DHTR_TEMP_CFG_REG , data );
 }
 
@@ -104,7 +108,7 @@ void LIS3DHTR_enable_temp_sensor( const LIS3DHTR_device_t* const device )
 	uint8_t data;
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_TEMP_CFG_REG , &data );
-	reg_set_field( &data , TEMP_CFG_TEMP_EN_pos , LIS3_ENABLE );
+	reg_set_field( &data , TEMP_CFG_TEMP_EN , LIS3_ENABLE );
 	LIS3DHTR_write_reg( device , LIS3DHTR_TEMP_CFG_REG , data );
 }
 
@@ -113,7 +117,7 @@ void LIS3DHTR_disable_temp_sensor( const LIS3DHTR_device_t* const device )
 	uint8_t data;
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_TEMP_CFG_REG , &data );
-	reg_set_field( &data , TEMP_CFG_TEMP_EN_pos , LIS3_DISABLE );
+	reg_set_field( &data , TEMP_CFG_TEMP_EN , LIS3_DISABLE );
 	LIS3DHTR_write_reg( device , LIS3DHTR_TEMP_CFG_REG , data );
 }
 
@@ -122,7 +126,7 @@ void LIS3DHTR_enable_BDU( const LIS3DHTR_device_t* const device )
 	uint8_t data;
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG4 , &data );
-	reg_set_field( &data , CTRL_REG4_BDU_pos , LIS3_ENABLE );
+	reg_set_field( &data , CTRL_REG4_BDU , LIS3_ENABLE );
 	LIS3DHTR_write_reg( device , LIS3DHTR_CTRL_REG4 , data );
 }
 
@@ -131,7 +135,7 @@ void LIS3DHTR_disable_BDU( const LIS3DHTR_device_t* const device )
 	uint8_t data;
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG4 , &data );
-	reg_set_field( &data , CTRL_REG4_BDU_pos , LIS3_DISABLE );
+	reg_set_field( &data , CTRL_REG4_BDU , LIS3_DISABLE );
 	LIS3DHTR_write_reg( device , LIS3DHTR_CTRL_REG4 , data );
 }
 
@@ -140,7 +144,7 @@ void LIS3DHTR_set_ODR( const LIS3DHTR_device_t* const device , CTRL_REG1_ODR_mod
 	uint8_t data;
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG1 , &data );
-	reg_set_field( &data , CTRL_REG1_ODR_pos , ODR_MODE );
+	reg_set_field( &data , CTRL_REG1_ODR , ODR_MODE );
 	LIS3DHTR_write_reg( device , LIS3DHTR_CTRL_REG1 , data );
 }
 
@@ -149,7 +153,7 @@ void LIS3DHTR_set_scale( const LIS3DHTR_device_t* const device , CTRL_REG4_FS_se
 	uint8_t data;
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG4 , &data );
-	reg_set_field( &data , CTRL_REG4_FS_pos , scale );
+	reg_set_field( &data , CTRL_REG4_FS , scale );
 	LIS3DHTR_write_reg( device , LIS3DHTR_CTRL_REG4 , data );
 }
 
@@ -163,17 +167,17 @@ void LIS3DHTR_set_resolution( const LIS3DHTR_device_t* const device , LIS3DHTR_o
 
 	switch ( resolution ) {
 		case LIS3DHTR_LOW_POWER:
-			reg_set_field( &reg1 , CTRL_REG1_LPen_pos , LIS3_ENABLE );
-			reg_set_field( &reg4 , CTRL_REG4_HR_pos , LIS3_DISABLE );
+			reg_set_field( &reg1 , CTRL_REG1_LPen , LIS3_ENABLE );
+			reg_set_field( &reg4 , CTRL_REG4_HR , LIS3_DISABLE );
 
 			break;
 		case LIS3DHTR_NORMAL:
-			reg_set_field( &reg1 , CTRL_REG1_LPen_pos , LIS3_DISABLE );
-			reg_set_field( &reg4 , CTRL_REG4_HR_pos , LIS3_DISABLE );
+			reg_set_field( &reg1 , CTRL_REG1_LPen , LIS3_DISABLE );
+			reg_set_field( &reg4 , CTRL_REG4_HR , LIS3_DISABLE );
 			break;
 		case LIS3DHTR_HIGH:
-			reg_set_field( &reg1 , CTRL_REG1_LPen_pos , LIS3_DISABLE );
-			reg_set_field( &reg4 , CTRL_REG4_HR_pos , LIS3_ENABLE );
+			reg_set_field( &reg1 , CTRL_REG1_LPen , LIS3_DISABLE );
+			reg_set_field( &reg4 , CTRL_REG4_HR , LIS3_ENABLE );
 			break;
 		default:
 			return; // erroneous setting
@@ -191,10 +195,12 @@ void LIS3DHTR_get_temp( const LIS3DHTR_device_t* const device )
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_ADC3_H , &ADC3_H );
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_ADC3_L , &ADC3_L );
+	temp_raw = (int16_t)( ( ADC3_H << LIS3DHTR_REG_SIZE_BITS ) | ADC3_L );
 
-	temp_raw = (int16_t)((ADC3_H << 8) | ADC3_L);
-	int32_t temp_centi = 2500 + ((int32_t)temp_raw * 100) / 256;
+#define calibration_temp 2500
+#define q8_format_normalizer 256
 
+	int32_t temp_centi = calibration_temp + ((int32_t)temp_raw * 100) / q8_format_normalizer;
 
 	int32_t temp_int  = temp_centi / 100;
 	int32_t temp_frac = temp_centi % 100;
@@ -208,23 +214,23 @@ void LIS3DHTR_get_acceleration( const LIS3DHTR_device_t* const device , float* x
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_X_L , &x_l );
 	uint8_t x_h;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_X_H , &x_h );
-	int16_t x_raw = (int16_t)( ( x_h << 8 ) | x_l );
+	int16_t x_raw = (int16_t)( ( x_h << LIS3DHTR_REG_SIZE_BITS ) | x_l );
 
 	uint8_t y_l;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_Y_L , &y_l );
 	uint8_t y_h;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_Y_H , &y_h );
-	int16_t y_raw = (int16_t)( ( y_h << 8 ) | y_l );
+	int16_t y_raw = (int16_t)( ( y_h << LIS3DHTR_REG_SIZE_BITS ) | y_l );
 
 	uint8_t z_l;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_Z_L , &z_l );
 	uint8_t z_h;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_Z_H , &z_h );
-	int16_t z_raw = (int16_t)( ( z_h << 8 ) | z_l );
+	int16_t z_raw = (int16_t)( ( z_h << LIS3DHTR_REG_SIZE_BITS ) | z_l );
 
 	uint8_t data;
 	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG4 , &data );
-	uint8_t accuracy = reg_get_field( data , CTRL_REG4_FS_mask , CTRL_REG4_FS_pos );
+	uint8_t accuracy = reg_get_field( data , CTRL_REG4_FS );
 
 	static const float accuracy_range[FS_NUM_SETTINGS] = { 16000.0f , 7282.0f , 3968.0f , 1280.0f };
 
