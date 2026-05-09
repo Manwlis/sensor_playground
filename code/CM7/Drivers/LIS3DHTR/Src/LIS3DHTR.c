@@ -11,8 +11,7 @@
 #include "cmsis_os2.h"
 
 /* Variables ---------------------------------------------------------*/
-const LIS3DHTR_reg_t LIS3DHTR_memory_map[LIS3DHTR_NUM_REGS] =
-{
+const LIS3DHTR_reg_t LIS3DHTR_memory_map[LIS3DHTR_NUM_REGS] = {
 #ifdef DEBUG_LIS3DHTR
 #define X( name , address , access ) { #name , address , access } ,
 #else
@@ -132,7 +131,8 @@ void LIS3DHTR_set_resolution( const LIS3DHTR_device_t* const device , LIS3DHTR_o
 	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG1 , &reg1 );
 	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG4 , &reg4 );
 
-	switch ( resolution ) {
+	switch( resolution )
+	{
 		case LIS3DHTR_LOW_POWER:
 			reg_set_field( &reg1 , CTRL_REG1_LPen , LIS3_ENABLE );
 			reg_set_field( &reg4 , CTRL_REG4_HR , LIS3_DISABLE );
@@ -162,38 +162,38 @@ void LIS3DHTR_get_temp( const LIS3DHTR_device_t* const device )
 
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_ADC3_H , &ADC3_H );
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_ADC3_L , &ADC3_L );
-	temp_raw = (int16_t)( ( ADC3_H << LIS3DHTR_REG_SIZE_BITS ) | ADC3_L );
+	temp_raw = (int16_t) ( ( ADC3_H << LIS3DHTR_REG_SIZE_BITS ) | ADC3_L );
 
 #define calibration_temp 2500
 #define q8_format_normalizer 256
 
-	int32_t temp_centi = calibration_temp + ((int32_t)temp_raw * 100) / q8_format_normalizer;
+	int32_t temp_centi = calibration_temp + ( (int32_t) temp_raw * 100 ) / q8_format_normalizer;
 
-	int32_t temp_int  = temp_centi / 100;
+	int32_t temp_int = temp_centi / 100;
 	int32_t temp_frac = temp_centi % 100;
 
-	printf( "temp = %ld.%ld\n" , temp_int , (uint32_t)( ( temp_frac < 0 ) ? -temp_frac : temp_frac ) );
+	printf( "temp = %ld.%ld\n" , temp_int , (uint32_t) ( ( temp_frac < 0 ) ? -temp_frac : temp_frac ) );
 }
 
-void LIS3DHTR_get_acceleration( const LIS3DHTR_device_t* const device , float* x , float* y , float *z )
+void LIS3DHTR_get_acceleration( const LIS3DHTR_device_t* const device , float* x , float* y , float* z )
 {
 	uint8_t x_l;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_X_L , &x_l );
 	uint8_t x_h;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_X_H , &x_h );
-	int16_t x_raw = (int16_t)( ( x_h << LIS3DHTR_REG_SIZE_BITS ) | x_l );
+	int16_t x_raw = (int16_t) ( ( x_h << LIS3DHTR_REG_SIZE_BITS ) | x_l );
 
 	uint8_t y_l;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_Y_L , &y_l );
 	uint8_t y_h;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_Y_H , &y_h );
-	int16_t y_raw = (int16_t)( ( y_h << LIS3DHTR_REG_SIZE_BITS ) | y_l );
+	int16_t y_raw = (int16_t) ( ( y_h << LIS3DHTR_REG_SIZE_BITS ) | y_l );
 
 	uint8_t z_l;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_Z_L , &z_l );
 	uint8_t z_h;
 	LIS3DHTR_read_reg( device , LIS3DHTR_OUT_Z_H , &z_h );
-	int16_t z_raw = (int16_t)( ( z_h << LIS3DHTR_REG_SIZE_BITS ) | z_l );
+	int16_t z_raw = (int16_t) ( ( z_h << LIS3DHTR_REG_SIZE_BITS ) | z_l );
 
 	uint8_t data;
 	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG4 , &data );
