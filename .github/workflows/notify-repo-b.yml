@@ -1,0 +1,19 @@
+name: Notify repo B
+
+on:
+  push:
+    paths:
+      - 'code/CM7/Drivers/LIS3DHTR/**'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger repo B workflow
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.REPO_B_TRIGGER_TOKEN }}" \
+            https://api.github.com/repos/Manwlis/FreeRTOS_LwIP_MQTT/dispatches \
+            -d '{"event_type":"sync_shared"}'
