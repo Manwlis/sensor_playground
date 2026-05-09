@@ -22,7 +22,6 @@ const LIS3DHTR_reg_t LIS3DHTR_memory_map[LIS3DHTR_NUM_REGS] =
 #undef X
 };
 
-void test_infastructure( const LIS3DHTR_device_t* const device ); // TODO remove
 /* Functions ---------------------------------------------------------*/
 void LIS3DHTR_print_mmap()
 {
@@ -52,38 +51,6 @@ void LIS3DHTR_read_all_regs( const LIS3DHTR_device_t* const device )
 #endif
 	}
 }
-
-void test_infastructure( const LIS3DHTR_device_t* const device )
-{
-	uint8_t data = 0xFF;
-
-	LIS3DHTR_read_reg( device , LIS3DHTR_FIFO_SRC_REG , &data );
-
-	printf( "FSS %d\n" , reg_get_field( data , FIFO_SRC_REG_FSS ) );
-	printf( "EMPTY %d\n" , reg_get_field( data , FIFO_SRC_REG_EMPTY ) );
-	printf( "OVRN_FIFO %d\n" , reg_get_field( data , FIFO_SRC_REG_OVRN_FIFO ) );
-	printf( "WTM %d\n" , reg_get_field( data , FIFO_SRC_REG_WTM ) );
-
-	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG1 , &data );
-
-	printf("Value read ------------------\n");
-	printf( "LIS3DHTR_CTRL_REG1 %x\n" , data );
-	printf("ODR %d\n" , reg_get_field( data , CTRL_REG1_ODR ) );
-
-	reg_set_field( &data , CTRL_REG1_ODR , ODR_100HZ );
-	printf("Value to write ------------------\n");
-	printf( "LIS3DHTR_CTRL_REG1 %x\n" , data );
-	printf("ODR %d\n" , reg_get_field( data , CTRL_REG1_ODR ) );
-
-	LIS3DHTR_write_reg( device , LIS3DHTR_CTRL_REG1 , data );
-
-	LIS3DHTR_read_reg( device , LIS3DHTR_CTRL_REG1 , &data );
-
-	printf("Value writen ------------------\n");
-	printf( "LIS3DHTR_CTRL_REG1 %x\n" , data );
-	printf("ODR %d\n" , reg_get_field( data , CTRL_REG1_ODR ) );
-}
-
 
 void LIS3DHTR_enable_aux_adcs( const LIS3DHTR_device_t* const device )
 {
