@@ -159,7 +159,7 @@ void StartDefaultTask(void *argument)
 			LIS3DHTR_set_ODR( &LIS3DHTR_handle , ODR_100HZ );
 
 			osDelay(5);
-			LIS3DHTR_get_temp( &LIS3DHTR_handle );
+			float temp = LIS3DHTR_get_temp( &LIS3DHTR_handle );
 		}
 		if( input == 'a' )
 		{
