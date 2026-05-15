@@ -29,13 +29,13 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "cmsis_os2.h"
 /* USER CODE END Includes */
 
 extern I2C_HandleTypeDef hi2c4;
 
 /* USER CODE BEGIN Private defines */
-
+extern osThreadId_t hi2c4_task_handle;
 /* USER CODE END Private defines */
 
 void MX_I2C4_Init(void);

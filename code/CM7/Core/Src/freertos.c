@@ -138,9 +138,9 @@ void StartDefaultTask(void *argument)
 	start_ADC_DMA();
 
 	LIS3DHTR_device_t LIS3DHTR_handle = LIS3DHTR_create_handle( &hi2c4 , 0x19 );
+	hi2c4_task_handle = osThreadGetId();
 
 	char input = '\0';
-
 	for( ; ; )
 	{
 		// bsp implement printf but not scanf
@@ -160,6 +160,8 @@ void StartDefaultTask(void *argument)
 
 			osDelay(5);
 			float temp = LIS3DHTR_get_temp( &LIS3DHTR_handle );
+
+			printf("Temp = %d\n" , temp );
 		}
 		if( input == 'a' )
 		{
@@ -168,6 +170,8 @@ void StartDefaultTask(void *argument)
 			float z;
 			LIS3DHTR_set_resolution( &LIS3DHTR_handle , LIS3DHTR_LOW_POWER );
 			LIS3DHTR_get_acceleration( &LIS3DHTR_handle , &x , &y , &z );
+
+			printf("x = %d    y = %d    z = %d\n" , (int)x , (int)y , (int)z );
 		}
 	}
   /* USER CODE END StartDefaultTask */

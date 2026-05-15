@@ -19,9 +19,12 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
-
 /* USER CODE BEGIN 0 */
-
+#include "LIS3DHTR_types.h"
+// The public HAL API functions HAL_I2C_Mem_Write_IT() & HAL_I2C_Mem_Read_IT() expect one outstanding transfer per peripheral.
+// To ensure this, all transactions of a hi2c will be facilitated by a single task.
+// It is expected that the task that initializes the peripheral is the one that handles it too.
+osThreadId_t hi2c4_task_handle;
 /* USER CODE END 0 */
 
 I2C_HandleTypeDef hi2c4;
@@ -65,7 +68,6 @@ void MX_I2C4_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN I2C4_Init 2 */
-
   /* USER CODE END I2C4_Init 2 */
 
 }
@@ -145,6 +147,29 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
 }
 
 /* USER CODE BEGIN 1 */
+void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+	if( hi2c->Instance == hi2c4.Instance )
+	{
+		osThreadFlagsSet( hi2c4_task_handle , I2C_MEM_IT_FLAG );
+	}
+}
+
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+	if( hi2c->Instance == hi2c4.Instance )
+	{
+		osThreadFlagsSet( hi2c4_task_handle , I2C_MEM_IT_FLAG );
+	}
+}
+
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
+{
+	if( hi2c->Instance == hi2c4.Instance )
+	{
+		osThreadFlagsSet( hi2c4_task_handle , I2C_ERR_IT_FLAG );
+	}
+}
 
 /* USER CODE END 1 */
 
