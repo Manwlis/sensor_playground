@@ -30,6 +30,7 @@ extern "C" {
 
 /* USER CODE BEGIN Includes */
 
+#define ADC_DMA_FLAG	0x0001U
 /* USER CODE END Includes */
 
 extern ADC_HandleTypeDef hadc3;

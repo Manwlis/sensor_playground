@@ -180,7 +180,7 @@ void HAL_ADC_ConvCpltCallback( ADC_HandleTypeDef* hadc )
 {
 //	printf("HAL_ADC_ConvCpltCallback\n");
 	UNUSED( hadc );
-	osThreadFlagsSet( ADC_task_handle , 0x0001U );
+	osThreadFlagsSet( ADC_task_handle , ADC_DMA_FLAG );
 }
 
 void HAL_ADC_ConvHalfCpltCallback( ADC_HandleTypeDef* hadc )
@@ -212,7 +212,8 @@ void calc_ADC_temp()
 	static int32_t filtered = 0;
 
 	// wait until the next DMA transfer is completed, to avoid torn reads. This could be avoided with double buffering
-	osThreadFlagsWait( 0x0001U , osFlagsWaitAny , osWaitForever );
+	osThreadFlagsClear( ADC_DMA_FLAG );
+	osThreadFlagsWait( ADC_DMA_FLAG , osFlagsWaitAny , osWaitForever );
 
 	// get raw adc measurements and calculate Celsius
 #define AVOID_DIVISION 0
