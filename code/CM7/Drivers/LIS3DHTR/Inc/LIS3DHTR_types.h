@@ -22,7 +22,6 @@
 #include "settings.h"
 #endif
 
-
 enum
 {
 	LIS3_DISABLE ,

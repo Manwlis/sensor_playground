@@ -29,6 +29,7 @@
 #include "adc.h"
 #include "stm32h7xx_nucleo.h"
 #include "LIS3DHTR.h"
+#include "lwl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -173,6 +174,13 @@ void StartDefaultTask(void *argument)
 
 			printf("x = %d    y = %d    z = %d\n" , (int)x , (int)y , (int)z );
 		}
+		if( input == 'z' )
+		{
+			uint16_t t = 5;
+			lwl_enter_record( 'T' , 'T' , "h" , t );
+		}
+		if( input == 'd' )
+			dump_log();
 	}
   /* USER CODE END StartDefaultTask */
 }

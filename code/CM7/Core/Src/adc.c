@@ -24,6 +24,9 @@
 #include "cmsis_os2.h"
 #include "tim.h"
 
+#include "lwl.h"
+
+/* Variables ------------------------------------------------------------------*/
 uint16_t adc_DMA_buf[ADC3_NUM_REGS];
 osThreadId_t ADC_task_handle;
 /* USER CODE END 0 */
@@ -209,6 +212,8 @@ void start_ADC_DMA()
 
 void calc_ADC_temp()
 {
+	lwl_enter_record( 'A' , 'R' , "" );
+
 	static int32_t filtered = 0;
 
 	// wait until the next DMA transfer is completed, to avoid torn reads. This could be avoided with double buffering
