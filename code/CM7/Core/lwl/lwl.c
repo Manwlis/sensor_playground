@@ -10,11 +10,13 @@
 #include <stddef.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
 #include "stm32h7xx_nucleo.h"
 #include "stm32h7xx_hal.h"
 
 /* Macros ------------------------------------------------------------------*/
-#define LWL_BUFFER_SIZE 1024	// in bytes
+#define LWL_BUFFER_SIZE 2048	// in bytes
 #define IS_POWER_OF_2( x ) ( ( x ) > 0 && ( ( ( x ) & ( ( x ) - 1 ) ) == 0 ) )
 _Static_assert( IS_POWER_OF_2( LWL_BUFFER_SIZE ) , "LWL_BUFFER_SIZE must be a power of 2" );
 
@@ -25,12 +27,28 @@ typedef struct _lwl_data_t
 	uint8_t buffer[LWL_BUFFER_SIZE];
 } lwl_data_t;
 
-/* Variables ---------------------------------------------------------*/
-static lwl_data_t lwl_data = { .next_entry_index = 0 , .buffer = { 0 } };
+typedef struct _lwl_driver_t
+{
+	lwl_data_t* data;
+	bool is_initialized;
+}lwl_driver_t;
 
+/* Variables ---------------------------------------------------------*/
+static lwl_data_t lwl_data; // TODO: maybe should not directly access lwl_data, but go through lwl_driver
+static lwl_driver_t lwl_driver = { .data = &lwl_data , .is_initialized = false };
 /* Functions ---------------------------------------------------------*/
+void lwl_init()
+{
+	lwl_data.next_entry_index = 0;
+	memset( lwl_data.buffer , 0 , LWL_BUFFER_SIZE * sizeof( uint8_t ) );
+	lwl_driver.is_initialized = true;
+}
+
 void lwl_enter_record( uint8_t module_id , uint8_t functionality_id , const char* fmt , ... )
 {
+	if( lwl_driver.is_initialized == false )
+		return;
+
 	lwl_data.buffer[lwl_data.next_entry_index] = module_id;
 	lwl_data.next_entry_index = ( lwl_data.next_entry_index + 1 ) & ( LWL_BUFFER_SIZE - 1 );
 //	If buffer size is not power of 2 then
@@ -56,7 +74,6 @@ void lwl_enter_record( uint8_t module_id , uint8_t functionality_id , const char
 
 					lwl_data.next_entry_index = ( lwl_data.next_entry_index + 1 ) & ( LWL_BUFFER_SIZE - 1 );
 				}
-
 				break;
 			}
 			case 'u':
@@ -70,7 +87,6 @@ void lwl_enter_record( uint8_t module_id , uint8_t functionality_id , const char
 
 					lwl_data.next_entry_index = ( lwl_data.next_entry_index + 1 ) & ( LWL_BUFFER_SIZE - 1 );
 				}
-
 				break;
 			}
 			case 'c':
@@ -79,21 +95,20 @@ void lwl_enter_record( uint8_t module_id , uint8_t functionality_id , const char
 				lwl_data.next_entry_index = ( lwl_data.next_entry_index + 1 ) & ( LWL_BUFFER_SIZE - 1 );
 				break;
 			}
-// Warning: This should not be used. The decoding script can not find the size of each script easily. Need a lot of work to achieve that.
-//			case 's':
-//			{
-//				char* s = va_arg( args , char* );
-//				while( 1 )
-//				{
-//					lwl_data.buffer[lwl_data.next_entry_index] = (uint8_t) *s;
-//					lwl_data.next_entry_index = ( lwl_data.next_entry_index + 1 ) & ( LWL_BUFFER_SIZE - 1 );
-//
-//					if( *s == '\0' )
-//						break;
-//					s++;
-//				}
-//				break;
-//			}
+			case 's':
+			case 'h':
+			{
+				uint16_t temp = (uint16_t) va_arg( args , unsigned int );
+
+				for( size_t i = 0 ; i < sizeof(uint16_t) ; i++ )
+				{
+					lwl_data.buffer[lwl_data.next_entry_index] = (uint8_t) temp;
+					temp >>= 8;
+
+					lwl_data.next_entry_index = ( lwl_data.next_entry_index + 1 ) & ( LWL_BUFFER_SIZE - 1 );
+				}
+				break;
+			}
 			case 'f':
 			{
 				union
@@ -115,12 +130,11 @@ void lwl_enter_record( uint8_t module_id , uint8_t functionality_id , const char
 	}
 }
 
+// this doesnt work, because uart is set with 7 data bits. Use debugger for now instead
 void dump_log()
 {
 	static COM_TypeDef COM_ActiveLogPort = COM1;
 	uint32_t index = (uint32_t)(lwl_data.next_entry_index);
-	HAL_UART_Transmit(&hcom_uart [COM_ActiveLogPort], (uint8_t *) &index , sizeof(index) , COM_POLL_TIMEOUT);
-	printf("%lu" , index );
-	printf("\n\n");
+	HAL_UART_Transmit(&hcom_uart [COM_ActiveLogPort], (uint8_t *) &index , sizeof(index) , COM_POLL_TIMEOUT );
 	HAL_UART_Transmit(&hcom_uart [COM_ActiveLogPort], lwl_data.buffer , LWL_BUFFER_SIZE , COM_POLL_TIMEOUT );
 }

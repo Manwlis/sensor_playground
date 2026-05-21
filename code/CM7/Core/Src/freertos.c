@@ -177,7 +177,8 @@ void StartDefaultTask(void *argument)
 		if( input == 'z' )
 		{
 			uint16_t t = 5;
-			lwl_enter_record( 'T' , 'T' , "h" , t );
+			lwl_init();
+			lwl_enter_record( TEST_LWL_ID , TEST_TEST_LWL_ID , "h" , t );
 		}
 		if( input == 'd' )
 			dump_log();

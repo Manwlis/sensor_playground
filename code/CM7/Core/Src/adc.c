@@ -212,7 +212,7 @@ void start_ADC_DMA()
 
 void calc_ADC_temp()
 {
-	lwl_enter_record( 'A' , 'R' , "" );
+	lwl_enter_record( ADC_LWL_ID , ADC_READ_LWL_ID , "" );
 
 	static int32_t filtered = 0;
 

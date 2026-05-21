@@ -5,7 +5,6 @@
 #ifndef LIS3DHTR_INC_LIS3DHTR_TYPES_H_
 #define LIS3DHTR_INC_LIS3DHTR_TYPES_H_
 
-
 #include <stdint.h>
 #include "i2c.h"
 
