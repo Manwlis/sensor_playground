@@ -8,7 +8,7 @@ Just experimenting with some sensors and the Nucleo-STM32H755ZI
 Driver implementation for the LIS3DHTR accelerometer providing both high level and low level APIs. It abstracts the underlying transport layer (I2C/SPI) and is easily portable to other MCUs.
 
 ### High Level API
-The high level API exposes device functionality rather than register operations.
+The high level API exposes device functionality rather than register operations. It uses the ll API and expects that it is blocking.
 
 Instead of manipulating registers and bitfields directly, the user interacts with device features through functions such as:
 
@@ -19,7 +19,7 @@ Instead of manipulating registers and bitfields directly, the user interacts wit
 The goal is to expose the device capabilities while hiding register layout and configuration details.
 
 ### Low Level API
-The low level API provides register level access through blocking and non-blocking implementations.
+The low level API provides register level access. Currently, there are two implementations, no-OS and FreeRTOS based, both are blocking. The no-OS one waits while communication with the device is facilitated. The FreeRTOS implementation yields and continues when notified through an interrupt that the communication is completed.
 
 The ll API consists of the following functions:
 - `LIS3DHTR_read_reg()`: Reads from a register on the device.
