@@ -138,7 +138,7 @@ void StartDefaultTask(void *argument)
 
 	start_ADC_DMA();
 
-	LIS3DHTR_device_t LIS3DHTR_handle = LIS3DHTR_create_handle( &hi2c4 , 0x19 );
+	LIS3DHTR_device_t LIS3DHTR_handle = LIS3DHTR_create_handle( (void*) &hi2c4 , 0x19 );
 	hi2c4_task_handle = osThreadGetId();
 
 	char input = '\0';

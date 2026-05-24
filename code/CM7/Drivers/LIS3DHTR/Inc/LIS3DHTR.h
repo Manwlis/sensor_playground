@@ -35,7 +35,7 @@
 extern const LIS3DHTR_reg_t LIS3DHTR_memory_map[LIS3DHTR_NUM_REGS];
 
 /* Exported functions prototypes ---------------------------------------------*/
-LIS3DHTR_device_t LIS3DHTR_create_handle( const I2C_HandleTypeDef* const i2c_handle , const uint8_t i2c_address );
+LIS3DHTR_device_t LIS3DHTR_create_handle( const void* const phy_handle , const uint8_t phy_address );
 // low level API
 HAL_StatusTypeDef LIS3DHTR_read_reg( const LIS3DHTR_device_t* const device , uint8_t reg_index , uint8_t* const reg_value );
 HAL_StatusTypeDef LIS3DHTR_write_reg( const LIS3DHTR_device_t* const device , uint8_t reg_index , uint8_t reg_value );

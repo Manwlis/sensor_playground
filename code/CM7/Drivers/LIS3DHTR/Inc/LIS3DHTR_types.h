@@ -69,8 +69,8 @@ typedef struct
 typedef struct
 {
 	const LIS3DHTR_reg_t* const memory_map;
-	const I2C_HandleTypeDef* const i2c_handle;
-	const uint8_t i2c_address;
+	const void* const phy_handle;
+	const uint8_t phy_address;
 } LIS3DHTR_device_t;
 
 
