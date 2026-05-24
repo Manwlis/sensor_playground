@@ -163,7 +163,7 @@ void StartDefaultTask(void *argument)
 			float temp;
 			LIS3DHTR_get_temp( &LIS3DHTR_handle , &temp );
 
-			printf("Temp = %d\n" , temp );
+			printf("Temp = %d\n" , (int)temp );
 		}
 		if( input == 'a' )
 		{
