@@ -149,7 +149,19 @@ void StartDefaultTask(void *argument)
 		printf("\n");
 
 		if( input == '1' )
-			calc_ADC_temp();
+		{
+			float temp_float;
+			if( calc_ADC_temp_float( &temp_float ) == HAL_OK )
+				printf( "%f\n" , temp_float );
+
+			int64_t temp_int;
+			if( calc_ADC_temp_int( &temp_int ) == HAL_OK )
+				printf( "%ld.%03lu C\n" , (int32_t) ( temp_int / 1000 ) , (uint32_t) ( temp_int % 1000 ) );
+
+			int64_t temp_int_reduced;
+			if( calc_ADC_temp_reduced_div( &temp_int_reduced ) == HAL_OK )
+				printf( "%ld.%03lu C\n" , (int32_t) ( temp_int_reduced / 1000 ) , (uint32_t) ( temp_int_reduced % 1000 ) );
+		}
 		if( input == '2' )
 			LIS3DHTR_read_all_regs( &LIS3DHTR_handle );
 		if( input == '3' )

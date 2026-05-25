@@ -48,7 +48,9 @@ void MX_ADC3_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 void start_ADC_DMA();
-void calc_ADC_temp();
+HAL_StatusTypeDef calc_ADC_temp_reduced_div( int64_t* const result );
+HAL_StatusTypeDef calc_ADC_temp_int( int64_t* const result );
+HAL_StatusTypeDef calc_ADC_temp_float( float* const result );
 
 /* USER CODE END Prototypes */
 
