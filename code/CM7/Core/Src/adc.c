@@ -21,14 +21,13 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
-#include "cmsis_os2.h"
 #include "tim.h"
-
 #include "lwl.h"
 
 /* Variables ------------------------------------------------------------------*/
-uint16_t adc_DMA_buf[ADC3_NUM_REGS];
-osThreadId_t ADC_task_handle;
+static uint16_t adc_buf0[ADC3_NUM_REGS];
+static uint16_t adc_buf1[ADC3_NUM_REGS];
+static volatile uint16_t* latest_adc_buf = NULL;
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc3;
@@ -179,17 +178,18 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 }
 
 /* USER CODE BEGIN 1 */
-void HAL_ADC_ConvCpltCallback( ADC_HandleTypeDef* hadc )
+void DMA_M0_Callback(DMA_HandleTypeDef *hdma)
 {
-//	printf("HAL_ADC_ConvCpltCallback\n");
-	UNUSED( hadc );
-	osThreadFlagsSet( ADC_task_handle , ADC_DMA_FLAG );
+    UNUSED(hdma);
+
+    latest_adc_buf = adc_buf0;
 }
 
-void HAL_ADC_ConvHalfCpltCallback( ADC_HandleTypeDef* hadc )
+void DMA_M1_Callback(DMA_HandleTypeDef *hdma)
 {
-//	printf("HAL_ADC_ConvHalfCpltCallback\n");
-	UNUSED( hadc );
+    UNUSED(hdma);
+
+    latest_adc_buf = adc_buf1;
 }
 
 void HAL_ADC_ErrorCallback( ADC_HandleTypeDef* hadc )
@@ -199,15 +199,22 @@ void HAL_ADC_ErrorCallback( ADC_HandleTypeDef* hadc )
 
 void start_ADC_DMA()
 {
+    hadc3.DMA_Handle->XferCpltCallback   = DMA_M0_Callback;
+    hadc3.DMA_Handle->XferM1CpltCallback = DMA_M1_Callback;
+
 	// Start DMA once
-	HAL_ADC_Start_DMA( &hadc3 , (uint32_t*) adc_DMA_buf , ADC3_NUM_REGS );
-	__HAL_DMA_DISABLE_IT( hadc3.DMA_Handle , DMA_IT_HT ); // Don't need half transfer interrupts
+	HAL_DMAEx_MultiBufferStart_IT(
+		hadc3.DMA_Handle,
+		(uint32_t)&ADC3->DR,
+		(uint32_t)adc_buf0,
+		(uint32_t)adc_buf1,
+		ADC3_NUM_REGS
+	);
+
+	HAL_ADC_Start(&hadc3);
 
 	// Start timer
 	HAL_TIM_Base_Start( &htim2 );
-
-	// The task that initialized the ADC is the one that is going to handle its interrupts and run its functionality..
-	ADC_task_handle = osThreadGetId();
 }
 
 void calc_ADC_temp()
@@ -216,11 +223,9 @@ void calc_ADC_temp()
 
 	static int32_t filtered = 0;
 
-	// wait until the next DMA transfer is completed, to avoid torn reads. This could be avoided with double buffering
-	osThreadFlagsClear( ADC_DMA_FLAG );
-	osThreadFlagsWait( ADC_DMA_FLAG , osFlagsWaitAny , osWaitForever );
-
 	// get raw adc measurements and calculate Celsius
+	uint16_t* adc_buf = (uint16_t*)latest_adc_buf;
+
 #define AVOID_DIVISION 0
 #if AVOID_DIVISION == 1
 	// calculate
@@ -229,15 +234,15 @@ void calc_ADC_temp()
 	// use q2.30 fixed point reciprocate to avoid the division
 	const uint32_t TEMP_RECIP_Q30 = (uint32_t) ( ( (uint64_t) 1 << 30 ) / ( *TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR ) );
 
-	uint32_t temp = (uint32_t) ( ( (uint64_t) adc_DMA_buf[TEMP_REG] * ( *VREFINT_CAL_ADDR ) ) / adc_DMA_buf[VDD_REG] );
+	uint32_t temp = (uint32_t) ( ( (uint64_t) adc_buf[TEMP_REG] * ( *VREFINT_CAL_ADDR ) ) / adc_buf[VDD_REG] );
 
 	int32_t temp_centi = (int32_t) ( ( (int64_t) ( temp - ( *TEMPSENSOR_CAL1_ADDR ) ) * TEMP_NUM * TEMP_RECIP_Q30 ) >> 30 ) + TEMP_OFF;
 
 #else
-	uint32_t vdd = VREFINT_CAL_VREF * ( *VREFINT_CAL_ADDR ) / adc_DMA_buf[VDD_REG];
-	uint32_t temp_scaled = adc_DMA_buf[TEMP_REG] * vdd / VREFINT_CAL_VREF;
-	int32_t temp_centi = ( (int64_t) temp_scaled - *TEMPSENSOR_CAL1_ADDR ) * ( ( TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP ) * 100 )
-	        / ( *TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR ) + ( TEMPSENSOR_CAL1_TEMP * 100 );
+	uint32_t vdd = VREFINT_CAL_VREF * ( *VREFINT_CAL_ADDR ) / adc_buf[VDD_REG];
+	uint32_t temp_scaled = adc_buf[TEMP_REG] * vdd / VREFINT_CAL_VREF;
+	int32_t temp_centi = (int32_t)( ( (int64_t) temp_scaled - *TEMPSENSOR_CAL1_ADDR ) * ( ( TEMPSENSOR_CAL2_TEMP - TEMPSENSOR_CAL1_TEMP ) * 100 )
+	        / ( *TEMPSENSOR_CAL2_ADDR - *TEMPSENSOR_CAL1_ADDR ) + ( TEMPSENSOR_CAL1_TEMP * 100 ) );
 #endif
 
 	// smooth it, the sensor is very noisy
