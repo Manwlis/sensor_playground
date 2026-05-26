@@ -30,7 +30,9 @@
 #include "stm32h7xx_nucleo.h"
 #include "LIS3DHTR.h"
 #include "lwl.h"
+#include "pmodals.h"
 #include "i2c.h"
+#include "spi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -140,10 +142,13 @@ void StartDefaultTask(void *argument)
 	start_ADC_DMA();
 
 	LIS3DHTR_device_t LIS3DHTR_handle = LIS3DHTR_create_handle( (void*) &hi2c4 , 0x19 );
-	hi2c4_task_handle = osThreadGetId();
+	pmodals_device_t pmodals_handle = pmodals_create_handle( (void*) &hspi1 , 3.27f , 10000 );
 
 #if LIS3DHTR_OS == FREE_RTOS
 	hi2c4_wrapper.task_handle = osThreadGetId();
+#endif
+#if PMODALS_OS == FREE_RTOS
+	hspi1_wrapper.task_handle  = osThreadGetId();
 #endif
 
 	char input = '\0';
@@ -200,6 +205,13 @@ void StartDefaultTask(void *argument)
 		}
 		if( input == 'd' )
 			dump_log();
+
+		if( input == 's')
+		{
+			float lux;
+			if( pmodals_get_lux( &pmodals_handle , &lux ) == HAL_OK )
+				printf( "%f\n" , lux );
+		}
 	}
   /* USER CODE END StartDefaultTask */
 }
