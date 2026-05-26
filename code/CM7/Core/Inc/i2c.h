@@ -29,13 +29,25 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-#include "cmsis_os2.h"
 /* USER CODE END Includes */
 
 extern I2C_HandleTypeDef hi2c4;
 
 /* USER CODE BEGIN Private defines */
-extern osThreadId_t hi2c4_task_handle;
+#if LIS3DHTR_OS == FREE_RTOS
+#include "cmsis_os2.h"
+
+// The public HAL API IT functions expect one outstanding transfer per peripheral.
+// To ensure this, all transactions of a hi2c will be facilitated by a single task.
+// It is expected that the task that initializes the peripheral is the one that handles it too.
+typedef struct _hi2c_freertos_wrapper_t
+{
+	I2C_HandleTypeDef* const hi2c;
+	osThreadId_t task_handle;
+}hi2c_freertos_wrapper_t;
+
+extern hi2c_freertos_wrapper_t hi2c4_wrapper;
+#endif
 /* USER CODE END Private defines */
 
 void MX_I2C4_Init(void);

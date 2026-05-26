@@ -30,6 +30,7 @@
 #include "stm32h7xx_nucleo.h"
 #include "LIS3DHTR.h"
 #include "lwl.h"
+#include "i2c.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -140,6 +141,10 @@ void StartDefaultTask(void *argument)
 
 	LIS3DHTR_device_t LIS3DHTR_handle = LIS3DHTR_create_handle( (void*) &hi2c4 , 0x19 );
 	hi2c4_task_handle = osThreadGetId();
+
+#if LIS3DHTR_OS == FREE_RTOS
+	hi2c4_wrapper.task_handle = osThreadGetId();
+#endif
 
 	char input = '\0';
 	for( ; ; )
