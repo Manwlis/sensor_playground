@@ -160,7 +160,7 @@ void HAL_SPI_ErrorCallback( SPI_HandleTypeDef* hspi )
 //  UNUSED(hspi);
 
 	uint32_t error = HAL_SPI_GetError( hspi );
-	printf("SPI error callback with error: %lu" , error );
+	printf( "SPI error callback with error: %lu" , error );
 	if( hspi->Instance == hspi1.Instance )
 	{
 		osThreadFlagsSet( hspi1_wrapper.task_handle , SPI_ERR_IT_FLAG );
