@@ -103,6 +103,7 @@ The API consists of the following functions:
 - `pmodals_get_lux()`: Returns the ambient light intensity in lux.
 
 Ambient light is calculated with the following formula:
+
 $$
 Lux =
 \frac{ADC_{value}}{ADC_{max}}
