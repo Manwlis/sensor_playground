@@ -21,6 +21,7 @@
 #include "spi.h"
 
 /* USER CODE BEGIN 0 */
+#include "lwl.h"
 #include "pmodals_types.h"
 
 #if PMODALS_OS == FREE_RTOS
@@ -148,7 +149,8 @@ void HAL_SPI_MspDeInit( SPI_HandleTypeDef* spiHandle )
 #if PMODALS_OS == FREE_RTOS
 void HAL_SPI_RxCpltCallback( SPI_HandleTypeDef* hspi )
 {
-	UNUSED( hspi );
+	lwl_enter_record( SPI_LWL_ID , SPI_RX_IT_LWL_ID , "" );
+
 	if( hspi->Instance == hspi1.Instance )
 	{
 		osThreadFlagsSet( hspi1_wrapper.task_handle , SPI_MEM_IT_FLAG );
@@ -157,10 +159,8 @@ void HAL_SPI_RxCpltCallback( SPI_HandleTypeDef* hspi )
 
 void HAL_SPI_ErrorCallback( SPI_HandleTypeDef* hspi )
 {
-//  UNUSED(hspi);
+	lwl_enter_record( SPI_LWL_ID , SPI_ER_IT_LWL_ID , "" );
 
-	uint32_t error = HAL_SPI_GetError( hspi );
-	printf( "SPI error callback with error: %lu" , error );
 	if( hspi->Instance == hspi1.Instance )
 	{
 		osThreadFlagsSet( hspi1_wrapper.task_handle , SPI_ERR_IT_FLAG );

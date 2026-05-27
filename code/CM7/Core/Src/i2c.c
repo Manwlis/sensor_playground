@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "i2c.h"
 /* USER CODE BEGIN 0 */
+#include "lwl.h"
 #include "LIS3DHTR_types.h"
 
 #if LIS3DHTR_OS == FREE_RTOS
@@ -150,6 +151,8 @@ void HAL_I2C_MspDeInit(I2C_HandleTypeDef* i2cHandle)
 #if LIS3DHTR_OS == FREE_RTOS
 void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
+	lwl_enter_record( I2C_LWL_ID , I2C_TX_IT_LWL_ID , "" );
+
 	if( hi2c->Instance == hi2c4.Instance )
 	{
 		osThreadFlagsSet( hi2c4_wrapper.task_handle , I2C_MEM_IT_FLAG );
@@ -158,6 +161,8 @@ void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
+	lwl_enter_record( I2C_LWL_ID , I2C_RX_IT_LWL_ID , "" );
+
 	if( hi2c->Instance == hi2c4.Instance )
 	{
 		osThreadFlagsSet( hi2c4_wrapper.task_handle , I2C_MEM_IT_FLAG );
@@ -166,6 +171,8 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
 {
+	lwl_enter_record( I2C_LWL_ID , I2C_ER_IT_LWL_ID , "" );
+
 	if( hi2c->Instance == hi2c4.Instance )
 	{
 		osThreadFlagsSet( hi2c4_wrapper.task_handle , I2C_ERR_IT_FLAG );
