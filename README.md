@@ -1,8 +1,11 @@
 # sensor_playground
-Just experimenting with some sensors and the Nucleo-STM32H755ZI
+STM32H755 / FreeRTOS based project for testing, integrating and evaluating sensors and supporting embedded modules.
 
-* Read internal temp sensor using DMA, which is fired every one second by a hardware timer.
-* Control LIS3DHTR using I2C in blocking & non-blocking modes.
+As of now it includes:
+* Driver for the LIS3DHTR MEMS accelerometer.
+* Driver for the PmodALS ambient light sensor.
+* Driver for the internal temperature sensor connected on the on-chip ADCs.
+* A custom lightweight logging module.
 
 ## LIS3DHTR Driver
 Driver implementation for the LIS3DHTR accelerometer providing both high level and low level APIs. It abstracts the underlying transport layer (I2C/SPI) and is easily portable to other MCUs.
@@ -229,3 +232,19 @@ The script automatically:
 - detects the non-wrapped buffer case
 - determines the most likely decoding start point
 - decodes and prints the recovered log entries in tabular form.
+
+## Repo Structure
+```
+code/
+├── CM7/    # FreeRTOS + LwIP application
+├── CM4/    # Secondary core application
+├── sensor_playground.ioc   # CubeMX project file
+lwl_decoder.py    # script that decodes lwl buffers
+```
+
+## Tools Used
+* STM32CubeMX 6.17.0
+* STM32Cube FW_H7 V1.13.0
+* STM32CubeIDE 2.1.1
+* FreeRTOS 10.6.2
+* CMSIS-RTOS 2.1.3
