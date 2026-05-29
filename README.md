@@ -171,12 +171,12 @@ lwl_enter_record(
 ```
 
 #### IDs
-`MODULE_ID` and `FUNCTION_ID` must be macros defined in `lwl.h` and must be single byte values. Preferably single character literals to improve readability of the logs.
+`MODULE_ID` and `FUNCTION_ID` must be macros defined in `lwl.h`. `MODULE_ID` must be a single byte values, preferably single character literal to improve readability of the logs. `FUNCTION_ID` can be any string.
 
 Example:
 ```c
 #define LIS3DHTR_LWL_ID      'L'
-#define LIS3DHTR_READ_LWL_ID 'R'
+#define LIS3DHTR_READ_LWL_ID "RX"
 ```
 
 The `( MODULE_ID, FUNCTION_ID )` combination must be globally unique across the project.

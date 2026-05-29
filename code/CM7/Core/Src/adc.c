@@ -257,7 +257,7 @@ HAL_StatusTypeDef calc_ADC_temp_reduced_div( int64_t* const result )
 
 HAL_StatusTypeDef calc_ADC_temp_int( int64_t* const result )
 {
-	lwl_enter_record( ADC_LWL_ID , ADC_REDUCED_DIV_LWL_ID , "" );
+	lwl_enter_record( ADC_LWL_ID , ADC_INT_LWL_ID , "" );
 
 	// No adc readings yet
 	if( latest_adc_buf == NULL )
@@ -284,7 +284,7 @@ HAL_StatusTypeDef calc_ADC_temp_int( int64_t* const result )
 
 HAL_StatusTypeDef calc_ADC_temp_float( float* const result )
 {
-	lwl_enter_record( ADC_LWL_ID , ADC_INT_LWL_ID , "" );
+	lwl_enter_record( ADC_LWL_ID , ADC_FLOAT_LWL_ID , "" );
 
 	// No adc readings yet
 	if( latest_adc_buf == NULL )
