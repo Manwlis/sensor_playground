@@ -4,7 +4,8 @@ on:
   push:
     paths:
       - 'code/CM7/Drivers/LIS3DHTR/**'
-      - 'code/CM7/Core/lwl/**'
+      - 'code/CM7/Drivers/PmodALS/**'
+      - 'code/CM7/Core/lwl/lwl.c'
       - 'lwl_decoder.py'
 
 jobs:
