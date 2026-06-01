@@ -36,6 +36,9 @@
 /* Exported functions prototypes ---------------------------------------------*/
 void lwl_init();
 void lwl_enter_record( uint8_t module_id , char functionality_id[] , const char* fmt , ... );
-void dump_log();
+
+#if __has_include("mqtt_client.h")
+void dump_log_mqtt();
+#endif
 
 #endif /* LWL_LWL_H_ */

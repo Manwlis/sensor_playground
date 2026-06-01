@@ -203,9 +203,6 @@ void StartDefaultTask(void *argument)
 			lwl_init();
 			lwl_enter_record( TEST_LWL_ID , TEST_TEST_LWL_ID , "h" , t );
 		}
-		if( input == 'd' )
-			dump_log();
-
 		if( input == 's')
 		{
 			float lux;
