@@ -1,0 +1,4 @@
+ROOT_DIR = "."
+DUMP_BIN = "./code/debug/test5/dump.bin"
+INFO_PATH = Path(DUMP_BIN).parent / "info.txt"
+LWL_DEFINES_FILE = "./code/CM7/Core/lwl/lwl.h"
